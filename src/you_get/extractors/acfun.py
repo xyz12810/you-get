@@ -4,11 +4,11 @@ __all__ = ['acfun_download']
 
 from ..common import *
 
-from .letv import letvcloud_download_by_vu
+from .le import letvcloud_download_by_vu
 from .qq import qq_download_by_vid
 from .sina import sina_download_by_vid
 from .tudou import tudou_download_by_iid
-from .youku import youku_download_by_vid
+from .youku import youku_download_by_vid, youku_open_download_by_vid
 
 import json, re
 
@@ -24,7 +24,7 @@ def acfun_download_by_vid(vid, title, output_dir='.', merge=True, info_only=Fals
     if sourceType == 'sina':
         sina_download_by_vid(sourceId, title, output_dir=output_dir, merge=merge, info_only=info_only)
     elif sourceType == 'youku':
-        youku_download_by_vid(sourceId, title=title, output_dir=output_dir, merge=merge, info_only=info_only)
+        youku_download_by_vid(sourceId, title=title, output_dir=output_dir, merge=merge, info_only=info_only, **kwargs)
     elif sourceType == 'tudou':
         tudou_download_by_iid(sourceId, title, output_dir=output_dir, merge=merge, info_only=info_only)
     elif sourceType == 'qq':
@@ -32,14 +32,11 @@ def acfun_download_by_vid(vid, title, output_dir='.', merge=True, info_only=Fals
     elif sourceType == 'letv':
         letvcloud_download_by_vu(sourceId, '2d8c027396', title, output_dir=output_dir, merge=merge, info_only=info_only)
     elif sourceType == 'zhuzhan':
-        a = 'http://api.aixifan.com/plays/%s/realSource' % vid
-        s = json.loads(get_content(a, headers={'deviceType': '1'}))
-        urls = s['data']['files'][-1]['url']
-        size = urls_size(urls)
-        print_info(site_info, title, 'mp4', size)
-        if not info_only:
-            download_urls(urls, title, 'mp4', size,
-                          output_dir=output_dir, merge=merge)
+        a = 'http://api.aixifan.com/plays/%s' % vid
+        s = json.loads(get_content(a, headers={'deviceType': '2'}))
+        if s['data']['source'] == "zhuzhan-youku":
+            sourceId = s['data']['sourceId']
+            youku_open_download_by_vid(client_id='908a519d032263f8', vid=sourceId, title=title, output_dir=output_dir, merge=merge, info_only=info_only, **kwargs)
     else:
         raise NotImplementedError(sourceType)
 

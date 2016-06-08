@@ -2,6 +2,7 @@
 
 import os.path
 import subprocess
+from ..util.strings import parameterize
 
 def get_usable_ffmpeg(cmd):
     try:
@@ -53,11 +54,11 @@ def ffmpeg_concat_mp4_to_mpg(files, output='output.mpg'):
         concat_list = open(output + '.txt', 'w', encoding="utf-8")
         for file in files:
             if os.path.isfile(file):
-                concat_list.write("file '%s'\n" % file)
+                concat_list.write("file %s\n" % parameterize(file))
         concat_list.close()
 
         params = [FFMPEG] + LOGLEVEL
-        params.extend(['-f', 'concat', '-y', '-i'])
+        params.extend(['-f', 'concat', '-safe', '-1', '-y', '-i'])
         params.append(output + '.txt')
         params += ['-c', 'copy', output]
 
@@ -118,10 +119,10 @@ def ffmpeg_concat_flv_to_mp4(files, output='output.mp4'):
             if os.path.isfile(file):
                 # for escaping rules, see:
                 # https://www.ffmpeg.org/ffmpeg-utils.html#Quoting-and-escaping
-                concat_list.write("file '%s'\n" % file.replace("'", r"'\''"))
+                concat_list.write("file %s\n" % parameterize(file))
         concat_list.close()
 
-        params = [FFMPEG] + LOGLEVEL + ['-f', 'concat', '-y', '-i']
+        params = [FFMPEG] + LOGLEVEL + ['-f', 'concat', '-safe', '-1', '-y', '-i']
         params.append(output + '.txt')
         params += ['-c', 'copy', output]
 
@@ -163,12 +164,12 @@ def ffmpeg_concat_mp4_to_mp4(files, output='output.mp4'):
         concat_list = open(output + '.txt', 'w', encoding="utf-8")
         for file in files:
             if os.path.isfile(file):
-                concat_list.write("file '%s'\n" % file)
+                concat_list.write("file %s\n" % parameterize(file))
         concat_list.close()
 
-        params = [FFMPEG] + LOGLEVEL + ['-f', 'concat', '-y', '-i']
+        params = [FFMPEG] + LOGLEVEL + ['-f', 'concat', '-safe', '-1', '-y', '-i']
         params.append(output + '.txt')
-        params += ['-c', 'copy', output]
+        params += ['-c', 'copy', '-bsf:a', 'aac_adtstoasc', output]
 
         subprocess.check_call(params)
         os.remove(output + '.txt')
